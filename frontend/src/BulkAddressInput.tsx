@@ -34,7 +34,7 @@ export default function BulkAddressInput(props: Props) {
             if (v.length > 12) {
               throw new Error(`'${v}' is too long`);
             }
-            if (!/[a-z1-4.]+/.test(v)) {
+            if (!/^[a-z1-4.]+$/.test(v)) {
               throw new Error(`'${v}' contains invalid characters`);
             }
             return v;
@@ -68,7 +68,7 @@ export default function BulkAddressInput(props: Props) {
         className="w-full rounded px-2 py-1 text-slate-900"
         placeholder="Comma seperated or new line seperated list"
         onChange={(e) => setState(e.target.value.trim())}
-        rows={props.max}
+        rows={props.max ?? 10}
       >
         {state}
       </textarea>

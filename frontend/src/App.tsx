@@ -1,16 +1,12 @@
-import { Fragment, Suspense, useState } from "react";
+import { Suspense } from "react";
 import ErrorBoundary from "./ErrorBoundary";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { myTokenBalances } from "./store";
-import { Combobox, Tab, Transition } from "@headlessui/react";
 import LoginButton from "./auth/LoginButton";
-import { ChevronUpDownIcon } from "@heroicons/react/24/outline";
-import classNames from "classnames";
-import BulkAddressInput from "./BulkAddressInput";
-import Button from "./components/Button";
-import { sendStore } from "./sendStore";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import SendUI from "./SendUI";
+import { Link, Route, Routes } from "react-router-dom";
+import ListManager from "./ListManager";
+import { USE_TEST_NET } from "./testnet";
 
 export default function App() {
   return (
@@ -19,9 +15,12 @@ export default function App() {
         <nav className="flex flex-row items-center px-2 py-1 md:p-4">
           <div className="hidden flex-1 md:block" />
           <div className="flex-1">
-            <h1 className="font-bold md:text-center md:text-3xl">
-              Token Multisend
-            </h1>
+            <Link to="/">
+              <h1 className="font-bold md:text-center md:text-3xl">
+                Token Multisend
+                {USE_TEST_NET && <span className="mx-2 text-xs uppercase font-bold text-amber-500">TESTNET</span>}
+              </h1>
+            </Link>
           </div>
           <div className="md:flex md:flex-1 md:flex-row md:justify-end">
             <LoginButton />
@@ -29,179 +28,15 @@ export default function App() {
         </nav>
         <ErrorBoundary>
           <main className="mx-auto">
-            <div className="flex flex-col space-y-12">
-              <AssetSelector />
-              <SendModeSelector />
-              <SendButton />
-            </div>
+            <Routes>
+              <Route index element={<SendUI />} />
+              <Route path="/lists/*" element={<ListManager />} />
+              <Route path="*" element={<span>Not found</span>} />
+            </Routes>
           </main>
         </ErrorBoundary>
         <ToastContainer />
       </div>
     </Suspense>
-  );
-}
-
-function AssetSelector() {
-  const [q, setQ] = useRecoilState(sendStore.quantityRawAtom);
-  const [query, setQuery] = useState("");
-
-  const balances = useRecoilValue(myTokenBalances);
-  console.log(balances);
-
-  const filteredBalances =
-    query === ""
-      ? balances
-      : balances.filter((bal) => {
-        return (bal.contract.toString() + bal.quantity.toString())
-          .toLowerCase()
-          .includes(query.toLowerCase());
-      });
-
-  return (
-    <div className="flex flex-row items-stretch">
-      <input
-        type="text"
-        className="rounded-l-lg bg-yellow-900 py-1 px-2 sm:text-sm"
-        value={q.amount}
-        onChange={(e) => setQ((qq) => ({ ...q, amount: e.target.value }))}
-      />
-      <Combobox
-        value={q.currency}
-        onChange={(v) => {
-          const [symbol, contract] = v.split("@");
-          const [decimalsR, currency] = symbol.split(",");
-          setQ((qq) => ({
-            ...qq,
-            currency,
-            decimals: parseInt(decimalsR, 10),
-            contract
-          }));
-        }}
-      >
-        <div className="relative h-4">
-          <div
-            className="relative w-full cursor-default overflow-hidden rounded-r-lg bg-yellow-900 px-4 py-1 text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
-            <Combobox.Input
-              onChange={(event) => setQuery(event.target.value)}
-              className="bg-yellow-900"
-            />
-            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon
-                className="h-5 w-5 text-stone-400"
-                aria-hidden="true"
-              />
-            </Combobox.Button>
-          </div>
-          <Transition
-            as={Fragment}
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-            afterLeave={() => setQuery("")}
-          >
-            <Combobox.Options
-              className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-stone-800 py-1 px-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-              {filteredBalances.map((bal) => {
-                const key =
-                  bal.quantity.symbol.toString() +
-                  "@" +
-                  bal.contract.toString();
-                return (
-                  <Combobox.Option key={key} value={key}>
-                    <span>{bal.quantity.symbol.name}&nbsp;</span>
-                    <span className="text-stone-500">
-                      {bal.contract.toString()}
-                    </span>
-                  </Combobox.Option>
-                );
-              })}
-            </Combobox.Options>
-          </Transition>
-        </div>
-      </Combobox>
-    </div>
-  );
-}
-
-function SendModeSelector() {
-  const options = ["adhoc", "list"] as const;
-  const [mode, setMode] = useRecoilState(sendStore.sendModeAtom);
-
-  return (
-    <>
-      <div className="w-full max-w-md">
-        <Tab.Group
-          selectedIndex={options.indexOf(mode)}
-          onChange={(idx) => setMode(options[idx])}
-        >
-          <Tab.List className="flex space-x-1 rounded-xl bg-stone-800 p-1">
-            {options.map((m) => (
-              <Tab
-                key={m}
-                className={({ selected }) =>
-                  classNames(
-                    "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-stone-700",
-                    "ring-black ring-opacity-60 ring-offset-2 ring-offset-stone-400 focus:outline-none focus:ring-2",
-                    selected
-                      ? "bg-stone-100 shadow"
-                      : "hover:bg-stone/[0.12] text-stone-100 hover:text-white"
-                  )
-                }
-              >
-                {m === "adhoc" ? "Ad-Hoc" : "Persistent List"}
-              </Tab>
-            ))}
-          </Tab.List>
-        </Tab.Group>
-      </div>
-      {mode === "adhoc" && <AdHocAddressInput />}
-    </>
-  );
-}
-
-function AdHocAddressInput() {
-  const [addrs, setAddrs] = useRecoilState(sendStore.adhocAddressAtom);
-
-  return (
-    <>
-      <BulkAddressInput
-        addresses={addrs}
-        max={19}
-        editMode={addrs.length === 0}
-        onComplete={setAddrs}
-        onRequestEdit={() => setAddrs([])}
-      />
-    </>
-  );
-}
-
-function SendButton() {
-  const quantity = useRecoilValue(sendStore.quantityQuery);
-  const { per, slippage } = useRecoilValue(sendStore.quantityPerRecipientQuery);
-
-  const { working, send } = sendStore.useSendFn();
-
-  return (
-    <div className="flex max-w-md flex-col space-y-1">
-      <div className="flex flex-col text-sm">
-        <span>
-          Sending {quantity.quantity.toString()} @{" "}
-          {quantity.contract.toString()}.
-        </span>
-        <span>Resulting in {per.quantity.toString()} per recipient.</span>
-        {slippage.quantity.value > 0 && (
-          <span>
-            {slippage.quantity.toString()} will be refunded, as it cannot be
-            evenly divided.
-          </span>
-        )}
-      </div>
-      <Button className="font-bold" onClick={send}>
-        <span className="flex-1 text-center">{
-          working ? "..." : "Send"
-        }</span>
-      </Button>
-    </div>
   );
 }

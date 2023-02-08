@@ -1,8 +1,8 @@
-import { selector } from "recoil";
+import { selector, selectorFamily } from "recoil";
 import { authQueries, refreshOnTransaction } from "./auth/store";
 import { eosLightApi, eosRPC } from "./eos-store";
 import { tknmultisendAbi } from "./tknmultisend.abi";
-import { Asset, ExtendedAsset, Name } from "@greymass/eosio";
+import { Asset, ExtendedAsset, Name, UInt64 } from "@greymass/eosio";
 
 export const myListsQuery = selector({
   key: "store/myListsQuery",
@@ -22,6 +22,16 @@ export const myListsQuery = selector({
     });
     return res.rows;
   },
+});
+
+export const myListQuery = selectorFamily({
+  key: "store/myListQuery",
+  get:
+    (idRaw: string) =>
+    async ({ get }) => {
+      const id = UInt64.from(idRaw);
+      return get(myListsQuery).find((l) => l.list_id.equals(id));
+    },
 });
 
 export const myTokenBalances = selector<Array<ExtendedAsset>>({

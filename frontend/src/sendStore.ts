@@ -1,8 +1,9 @@
 import { atom, selector, useRecoilValue } from "recoil";
-import { Asset, ExtendedAsset, Name, NameType } from "@greymass/eosio";
+import { Asset, ExtendedAsset, Name, NameType, UInt64 } from "@greymass/eosio";
 import { useCallback, useState } from "react";
 import { authQueries, useEosSignPushActions } from "./auth/store";
 import { tknmultisendAbi } from "./tknmultisend.abi";
+import { myListQuery } from "./store";
 
 const quantityRawAtom = atom<{
   amount: string;
@@ -15,24 +16,47 @@ const quantityRawAtom = atom<{
     amount: "0",
     contract: "eosio.token",
     currency: "WAX",
-    decimals: 8
-  }
+    decimals: 8,
+  },
 });
 
 const sendModeAtom = atom<"adhoc" | "list">({
   key: "sendStore/sendModeAtom",
-  default: "adhoc"
+  default: "adhoc",
 });
 
 const adhocAddressAtom = atom<Array<NameType>>({
-  key: "adhocAddressAtom",
-  default: []
+  key: "sendStore/adhocAddressAtom",
+  default: [],
+});
+
+// TODO: add support for other peoples list at some point.
+const selectedListAtom = atom<UInt64 | undefined>({
+  key: "sendStore/selectedListAtom",
+  default: undefined,
 });
 
 const numRecipientsQuery = selector<number>({
   key: "sendStore/numRecipientsQuery",
-  get: ({ get }) =>
-    get(sendModeAtom) === "adhoc" ? get(adhocAddressAtom).length : 0
+  get: ({ get }) => {
+    switch (get(sendModeAtom)) {
+      case "adhoc":
+        return get(adhocAddressAtom).length;
+      case "list": {
+        const selected = get(selectedListAtom);
+        if (selected === undefined) {
+          return 0;
+        }
+        const list = get(myListQuery(selected.toString()));
+        if (!list) {
+          return 0;
+        }
+        return list.recipients.length;
+      }
+      default:
+        return 0;
+    }
+  },
 });
 
 const quantityQuery = selector({
@@ -45,9 +69,9 @@ const quantityQuery = selector({
         parseFloat(amount.replace(",", ".")),
         Asset.Symbol.fromParts(currency, decimals)
       ),
-      contract: Name.from(contract)
+      contract: Name.from(contract),
     });
-  }
+  },
 });
 
 const quantityPerRecipientQuery = selector({
@@ -60,17 +84,17 @@ const quantityPerRecipientQuery = selector({
     return {
       per: ExtendedAsset.from({
         contract: q.contract,
-        quantity: Asset.fromUnits(per, q.quantity.symbol)
+        quantity: Asset.fromUnits(per, q.quantity.symbol),
       }),
       slippage: ExtendedAsset.from({
         contract: q.contract,
         quantity: Asset.fromUnits(
           q.quantity.units.subtracting(per.multiplying(n)),
           q.quantity.symbol
-        )
-      })
+        ),
+      }),
     };
-  }
+  },
 });
 
 const memoQuery = selector({
@@ -78,13 +102,15 @@ const memoQuery = selector({
   get: ({ get }) => {
     switch (get(sendModeAtom)) {
       case "adhoc":
-        return get(adhocAddressAtom).map(a => a.toString()).join(",");
+        return get(adhocAddressAtom)
+          .map((a) => a.toString())
+          .join(",");
       case "list":
         return `send:listauthor/id/todomemo`;
       default:
         throw new Error("Unsupported send mode");
     }
-  }
+  },
 });
 
 function useSendFn() {
@@ -98,7 +124,7 @@ function useSendFn() {
   const fn = useCallback(async () => {
     try {
       setWorking(true);
-      await signPushActions(pm => ({
+      await signPushActions((pm) => ({
         account: q.contract,
         name: "transfer",
         authorization: [pm],
@@ -106,8 +132,8 @@ function useSendFn() {
           from: user,
           to: tknmultisendAbi.AN,
           quantity: q.quantity,
-          memo
-        }
+          memo,
+        },
       }));
     } finally {
       setWorking(false);
@@ -116,7 +142,7 @@ function useSendFn() {
 
   return {
     working,
-    send: working ? undefined : fn
+    send: working ? undefined : fn,
   };
 }
 
@@ -124,6 +150,7 @@ export const sendStore = {
   quantityRawAtom,
   sendModeAtom,
   adhocAddressAtom,
+  selectedListAtom,
   numRecipientsQuery,
   quantityQuery,
   quantityPerRecipientQuery,

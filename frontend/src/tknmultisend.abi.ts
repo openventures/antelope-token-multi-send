@@ -1,14 +1,15 @@
 import { Name, NameType, Struct, UInt64, UInt64Type } from "@greymass/eosio";
 import { ActionMaker } from "./auth/store";
+import { USE_TEST_NET } from "./testnet";
 
 export namespace tknmultisendAbi {
-  export const AN = Name.from("tknmultisend");
+  export const AN = Name.from(USE_TEST_NET ? "squeezeboxes" : "tknmultisend");
 
   @Struct.type("_list_entity")
   export class ListEntity extends Struct {
     @Struct.field("uint64") list_id: UInt64;
     @Struct.field("string") label: string;
-    @Struct.field("name") recipients: Array<Name>;
+    @Struct.field("name[]") recipients: Array<Name>;
 
     constructor(args: any) {
       super(args);

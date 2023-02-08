@@ -29,7 +29,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "PORT=5555 react-scripts start",
+    "start": "PORT=5555 REACT_APP_USE_TEST_NET=true react-scripts start",
     "build": "npm run tailwind:build && REACT_APP_GIT_SHA=`git rev-parse --short HEAD` react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
