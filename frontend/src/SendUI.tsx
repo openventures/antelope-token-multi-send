@@ -25,7 +25,6 @@ function AssetSelector() {
   const [query, setQuery] = useState("");
 
   const balances = useRecoilValue(myTokenBalances);
-  console.log(balances);
 
   const filteredBalances =
     query === ""

@@ -7,6 +7,10 @@ import SendUI from "./SendUI";
 import { Link, Route, Routes } from "react-router-dom";
 import ListManager from "./ListManager";
 import { USE_TEST_NET } from "./testnet";
+import {
+  CodeBracketSquareIcon,
+  CubeTransparentIcon,
+} from "@heroicons/react/24/outline";
 
 export default function App() {
   return (
@@ -41,6 +45,38 @@ export default function App() {
         </ErrorBoundary>
         <ToastContainer />
       </div>
+      <footer className="mx-auto flex max-w-7xl flex-col space-y-1 px-4 py-12 text-sm text-stone-200">
+        <a
+          href="https://github.com/openventures/antelope-token-multi-send/"
+          target="_blank"
+          rel="noopener"
+          className="inline-flex flex-row items-center space-x-1 underline"
+        >
+          <CodeBracketSquareIcon className="h-4 w-4" />
+          <span>Source Code</span>
+        </a>
+        <a
+          href="https://waxblock.io/account/tknmultisend"
+          target="_blank"
+          rel="noopener"
+          className="inline-flex flex-row items-center space-x-1 underline"
+        >
+          <CubeTransparentIcon className="h-4 w-4" />
+          <span>Contract</span>
+        </a>
+        <p className="text-xs text-stone-400">
+          This project was requested and funded by the{" "}
+          <a
+            href="https://alienw.com/syndicate/neri"
+            target="_blank"
+            rel="noopener"
+            className="underline"
+          >
+            AlienWorlds NERI syndicate
+          </a>
+        </p>
+        <span>&copy; 2023 DaGardner#5862</span>
+      </footer>
     </Suspense>
   );
 }
