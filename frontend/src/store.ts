@@ -28,7 +28,7 @@ export const myListQuery = selectorFamily({
   key: "store/myListQuery",
   get:
     (idRaw: string) =>
-    async ({ get }) => {
+    async ({ get }): Promise<tknmultisendAbi.ListEntity | undefined> => {
       const id = UInt64.from(idRaw);
       return get(myListsQuery).find((l) => l.list_id.equals(id));
     },

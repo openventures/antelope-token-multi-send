@@ -18,7 +18,11 @@ export default function App() {
             <Link to="/">
               <h1 className="font-bold md:text-center md:text-3xl">
                 Token Multisend
-                {USE_TEST_NET && <span className="mx-2 text-xs uppercase font-bold text-amber-500">TESTNET</span>}
+                {USE_TEST_NET && (
+                  <span className="mx-2 text-xs font-bold uppercase text-amber-500">
+                    TESTNET
+                  </span>
+                )}
               </h1>
             </Link>
           </div>

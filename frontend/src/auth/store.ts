@@ -132,7 +132,9 @@ async function signPush(
     await new Promise((resolve) => setTimeout(resolve, 1500));
     set(nonce, Date.now());
     toast.dismiss(id);
-    toast.success("Transaction executed locally");
+    requestAnimationFrame(() => {
+      toast.success("Transaction executed locally");
+    });
   } catch (e: any) {
     console.error(e);
     toast.error(e.toString());

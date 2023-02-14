@@ -67,11 +67,10 @@ export default function BulkAddressInput(props: Props) {
       <textarea
         className="w-full rounded px-2 py-1 text-slate-900"
         placeholder="Comma seperated or new line seperated list"
-        onChange={(e) => setState(e.target.value.trim())}
+        onChange={(e) => setState(e.target.value)}
         rows={props.max ?? 10}
-      >
-        {state}
-      </textarea>
+        value={state}
+      />
       {!parsed.success && <span>{parsed.error.toString()}</span>}
       {parsed.success && <span>{parsed.names.length} valid addresses</span>}
       <div className="flex flex-row justify-end space-x-1">

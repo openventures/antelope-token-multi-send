@@ -16,7 +16,7 @@ export default function ListSendUI() {
         {lists.length === 0 && <li>You haven't created any lists yet.</li>}
         {lists.map((l) => (
           <li key={l.list_id.toString()}>
-            <label className="inline-flex flex-row space-x-2 items-center">
+            <label className="inline-flex flex-row items-center space-x-2">
               <input
                 type="radio"
                 checked={selectedList?.equals(l.list_id)}

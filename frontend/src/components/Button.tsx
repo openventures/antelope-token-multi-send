@@ -3,7 +3,7 @@ import classNames from "classnames";
 import { Link } from "react-router-dom";
 
 type Props = {
-  onClick?: (() => void) | ((e: SyntheticEvent) => void);
+  onClick?: undefined | (() => void) | ((e: SyntheticEvent) => void);
   to?: string;
   accent?: boolean;
   className?: string;
