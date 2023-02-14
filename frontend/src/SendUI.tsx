@@ -139,6 +139,7 @@ function SendModeSelector() {
 }
 
 function SendButton() {
+  const numRecipients = useRecoilValue(sendStore.numRecipientsQuery);
   const quantity = useRecoilValue(sendStore.quantityQuery);
   const { per, slippage } = useRecoilValue(sendStore.quantityPerRecipientQuery);
 
@@ -146,20 +147,27 @@ function SendButton() {
 
   return (
     <div className="flex max-w-md flex-col space-y-1">
-      <div className="flex flex-col text-sm">
-        <span>
-          Sending {quantity.quantity.toString()} @{" "}
-          {quantity.contract.toString()}.
-        </span>
-        <span>Resulting in {per.quantity.toString()} per recipient.</span>
-        {slippage.quantity.value > 0 && (
+      {numRecipients > 0 && (
+        <div className="flex flex-col text-sm">
           <span>
-            {slippage.quantity.toString()} will be refunded, as it cannot be
-            evenly divided.
+            Sending {quantity.quantity.toString()} @{" "}
+            {quantity.contract.toString()}.
           </span>
-        )}
-        <div className="w-screen" />
-      </div>
+          <span>Resulting in {per.quantity.toString()} per recipient.</span>
+          {slippage.quantity.value > 0 && (
+            <span>
+              {slippage.quantity.toString()} will be refunded, as it cannot be
+              evenly divided.
+            </span>
+          )}
+          <div className="w-screen" />
+        </div>
+      )}
+      {numRecipients === 0 && (
+        <div className="flex flex-col text-sm">
+          <span>No recipients (did you confirm your address input?)</span>
+        </div>
+      )}
       <Button className="font-bold" onClick={send}>
         <span className="flex-1 text-center">{working ? "..." : "Send"}</span>
       </Button>
